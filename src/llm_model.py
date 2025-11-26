@@ -2,7 +2,7 @@ import os
 from huggingface_hub import InferenceClient
 
 client = InferenceClient(
-    api_key="USE_HUGGINGFACE_API_KEY_FROM_ENV_VARIABLE",
+    api_key="",
 )
 
 class LLM_Model:
