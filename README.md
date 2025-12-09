@@ -4,4 +4,4 @@ resume of the sentiment of game.
 
 ## How it works:
 * We use the API form steam to obtain the reviews
-  * At least 100 reviews from users
+  * At least 500 reviews from users

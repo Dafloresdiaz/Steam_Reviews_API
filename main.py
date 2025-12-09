@@ -1,8 +1,12 @@
-from src.obtain_reviews import ObtainReviews as review
-from src.llm_model import LLM_Model as llm
+from fastapi import FastAPI
+from src.obtain_reviews import ObtainReviews
+from src.llm_model import LLM_Model
 
-if __name__ == "__main__":
-    obtain_review = review()
-    llm = llm()
+app = FastAPI()
+obtain_review = ObtainReviews()
+llm = LLM_Model()
+
+@app.get("/")
+def main_root():
     obtain_review.game_id = 2592160
-    print(llm.generate_sentiment(reviews=obtain_review.fetch_reviews()))
+    return llm.generate_sentiment(reviews=obtain_review.fetch_reviews())
