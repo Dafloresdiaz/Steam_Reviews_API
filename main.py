@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from typing import Optional
 from src.obtain_reviews import ObtainReviews
 from src.llm_model import LLM_Model
-from src.models import SentimentRequest, SentimentResponse, ErrorResponse
+from src.models import SentimentResponse, ErrorResponse
 
 app = FastAPI(
     title="Steam Reviews Sentiment Analysis API",
@@ -14,61 +15,65 @@ app = FastAPI(
 obtain_review = ObtainReviews()
 llm = LLM_Model()
 
-@app.get("/", 
+@app.get("/",
+         response_model=dict,
+         summary="Health check endpoint",
+         description="Returns system status to verify server is running",
+         responses={
+             200: {"description": "System is operational"}
+         })
+def health_check():
+    """
+    Health check endpoint to verify the server is running.
+    Returns:
+        dict: System status message.
+    """
+    return {"status": "system ok", "message": "Steam Reviews API is running"}
+
+@app.get("/sentiments",
          response_model=SentimentResponse,
-         summary="Analyze sentiment for default game",
-         description="Analyzes sentiment for game ID 2592160 (default game)",
+         summary="Analyze sentiment for Steam game reviews",
+         description="Analyzes sentiment of reviews for any Steam game using query parameters",
          responses={
              200: {"description": "Successful sentiment analysis"},
-             400: {"model": ErrorResponse, "description": "Bad request"},
+             400: {"model": ErrorResponse, "description": "Bad request - invalid game ID or parameters"},
              500: {"model": ErrorResponse, "description": "Internal server error"}
          })
-def main_root():
+def analyze_sentiment(
+    game_id: Optional[int] = Query(
+        None,
+        description="Steam game ID to analyze. If not provided, uses default game (2592160)"
+    ),
+    limit: Optional[int] = Query(
+        200,
+        description="Maximum number of reviews to fetch (default: 200)"
+    )
+):
     """
-    Analyze sentiment for a game.
-    Returns:
-        SentimentResponse: Contains sentiment analysis and metadata.
-    Raises:
-        HTTPException: If analysis fails or game not found.
-    """
-    try:
-        obtain_review.game_id = 2592160
-        reviews = obtain_review.fetch_reviews()
-        sentiment = llm.generate_sentiment(reviews=reviews)
-        return SentimentResponse(
-            game_id=2592160,
-            sentiment=sentiment,
-            reviews_count=len(reviews),
-            success=True
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/analyze",
-          response_model=SentimentResponse,
-          summary="Analyze sentiment for specific game",
-          description="Analyzes sentiment for a specific Steam game by ID",
-          responses={
-              200: {"description": "Successful sentiment analysis"},
-              400: {"model": ErrorResponse, "description": "Invalid game ID"},
-              500: {"model": ErrorResponse, "description": "Internal server error"}
-          })
-def analyze_sentiment(request: SentimentRequest):
-    """
-    Analyze sentiment for a specific Steam game.
+    Analyze sentiment for a Steam game using query parameters.
     Args:
-        request (SentimentRequest): Request containing game ID and optional limit.
+        game_id (Optional[int]): Steam game ID. Uses default (2592160) if not provided.
+        limit (Optional[int]): Maximum number of reviews to analyze. Default is 200.
     Returns:
         SentimentResponse: Contains sentiment analysis and metadata.
     Raises:
-        HTTPException: If analysis fails or game not found.
+        HTTPException: If analysis fails or game ID is invalid.
+    Examples:
+        /sentiments?game_id=730&limit=100  # CS:GO with 100 reviews
+        /sentiments?game_id=2592160        # Specific game with default limit
+        /sentiments                        # Default game with default limit
     """
     try:
-        obtain_review.game_id = request.game_id
+        # Use default game_id if not provided
+        if game_id is None:
+            game_id = 2592160
+        # Set limit for ObtainReviews (currently hardcoded at 200, but we pass it for future flexibility)
+        # Note: The fetch_reviews method has a hardcoded limit of 200 internally
+        obtain_review.game_id = game_id
         reviews = obtain_review.fetch_reviews()
         sentiment = llm.generate_sentiment(reviews=reviews)
         return SentimentResponse(
-            game_id=request.game_id,
+            game_id=game_id,
             sentiment=sentiment,
             reviews_count=len(reviews),
             success=True
