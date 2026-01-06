@@ -1,14 +1,35 @@
 import os
+from typing import List
 from huggingface_hub import InferenceClient
 
 client = InferenceClient(
-    api_key="", #Add you huggingface API KEY here
+    api_key=os.getenv("HUGGINGFACE_API_KEY", ""), #Add you huggingface API KEY here
 )
 
 class LLM_Model:
-    def generate_sentiment(self, reviews: list) -> str:
+    """
+    Class to generate sentiment analysis using LLM models.
+    This class uses HuggingFace's InferenceClient to analyze the sentiment
+    of game reviews using large language models.
+    """
+
+    def generate_sentiment(self, reviews: List[str]) -> str:
+        """
+        Generate sentiment analysis for a list of game reviews.
+        Args:
+            reviews (List[str]): List of review texts to analyze.
+        Returns:
+            str: Sentiment analysis summary from the LLM.
+        Raises:
+            ValueError: If reviews list is empty.
+            Exception: If API call fails.
+        Note:
+            Uses Llama-3.1-70B-Instruct model for analysis.
+        """
+        if not reviews:
+            raise ValueError("Reviews list cannot be empty")
         reviews_text = "\n----<REVIEW>----\n".join(reviews)
-        prompt =prompt = f"""
+        prompt = f"""
         Summarize the overall sentiment of these game reviews.
         Each review is separated by the tag <REVIEW>.
 
@@ -24,4 +45,4 @@ class LLM_Model:
             ],
         )
 
-        return completion.choices[0].message.content
+        return completion.choices[0].message.content or "No sentiment analysis available"
