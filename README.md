@@ -76,6 +76,17 @@ export HUGGINGFACE_API_KEY="your_huggingface_api_key_here"
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+### Running with Docker
+```bash
+# Build the Docker image
+docker build -t steam-reviews-api .
+
+# Run the container with environment variable
+docker run -d -p 8000:8000 -e HUGGINGFACE_API_KEY="your_api_key_here" steam-reviews-api
+```
+
+**Note:** Make sure your Dockerfile has the correct CMD to start the server.
+
 ### Documentation
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
