@@ -59,6 +59,7 @@ GET /sentiments?game_id=730&limit=100
 
 ### Prerequisites
 - Python 3.11+
+- Docker Compose
 - HuggingFace API key
 
 ### Installation
@@ -76,16 +77,19 @@ export HUGGINGFACE_API_KEY="your_huggingface_api_key_here"
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Running with Docker
+### Running with Docker Compose
 ```bash
-# Build the Docker image
-docker build -t steam-reviews-api .
+# Run the application with Docker Compose with no logs, remove the -d for logs
+docker-compose up -d --build
 
-# Run the container with environment variable
-docker run -d -p 8000:8000 -e HUGGINGFACE_API_KEY="your_api_key_here" steam-reviews-api
+# Stop the application (keeps containers for quick restart)
+docker-compose stop
+
+# For complete removal (stops and removes containers)
+docker-compose down
 ```
 
-**Note:** Make sure your Dockerfile has the correct CMD to start the server.
+**Note:** Ensure your `docker-compose.yaml` includes the service definition and environment variables (e.g., via `env_file: .env` or `environment`).
 
 ### Documentation
 - Swagger UI: http://localhost:8000/docs

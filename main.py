@@ -1,8 +1,9 @@
+from src.models import SentimentResponse, ErrorResponse
 from fastapi import FastAPI, HTTPException, Query
-from typing import Optional
+from src.db.db_operations import DBOperations
 from src.obtain_reviews import ObtainReviews
 from src.llm_model import LLM_Model
-from src.models import SentimentResponse, ErrorResponse
+from typing import Optional
 
 app = FastAPI(
     title="Steam Reviews Sentiment Analysis API",
@@ -14,6 +15,7 @@ app = FastAPI(
 
 obtain_review = ObtainReviews()
 llm = LLM_Model()
+db = DBOperations()
 
 @app.get("/",
          response_model=dict,
@@ -69,13 +71,28 @@ def analyze_sentiment(
             game_id = 2592160
         # Set limit for ObtainReviews (currently hardcoded at 200, but we pass it for future flexibility)
         # Note: The fetch_reviews method has a hardcoded limit of 200 internally
-        obtain_review.game_id = game_id
-        reviews = obtain_review.fetch_reviews()
-        sentiment = llm.generate_sentiment(reviews=reviews)
+        # Check if sentiment data is cached in Redis
+        if db.sentiment_exists(game_id=game_id):
+            # Retrieve cached data
+            game_sentiment = db.get_sentiment(game_id=game_id)
+            sentiment = game_sentiment["sentiment"]
+            reviews_count = int(game_sentiment["reviews_count"])
+        else:
+            # Fetch new reviews and analyze sentiment
+            obtain_review.game_id = game_id
+            reviews = obtain_review.fetch_reviews()
+            reviews_count = len(reviews)
+            sentiment = llm.generate_sentiment(reviews=reviews)
+            # Cache the result in Redis
+            db.set_sentiment(
+                game_id=game_id,
+                sentiment=sentiment,
+                reviews_count=reviews_count
+            )
         return SentimentResponse(
             game_id=game_id,
             sentiment=sentiment,
-            reviews_count=len(reviews),
+            reviews_count=reviews_count,
             success=True
         )
     except ValueError as e:

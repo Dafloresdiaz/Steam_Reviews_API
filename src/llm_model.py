@@ -31,7 +31,8 @@ class LLM_Model:
         reviews_text = "\n----<REVIEW>----\n".join(reviews)
         prompt = f"""
         Summarize the overall sentiment of these game reviews.
-        Each review is separated by the tag <REVIEW>.
+        Each review is separated by the tag <REVIEW>. Give the result
+        without paragraph breaks.
 
         {reviews_text}
         """
@@ -45,4 +46,5 @@ class LLM_Model:
             ],
         )
 
-        return completion.choices[0].message.content or "No sentiment analysis available"
+        sentiment = completion.choices[0].message.content or "No sentiment analysis available"
+        return sentiment.replace('\n', ' ').strip()
