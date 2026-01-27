@@ -4,7 +4,7 @@ API to analyze sentiment of Steam game reviews using Large Language Models.
 
 ## How it works:
 * We use the Steam API to obtain game reviews
-* We process reviews with Llama 3.1-70B via HuggingFace
+* We process reviews with cardiffnlp/twitter-roberta-base-sentiment via HuggingFace
 * We return a concise sentiment analysis summary
 
 ## API Endpoints

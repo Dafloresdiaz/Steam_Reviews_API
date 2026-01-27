@@ -24,20 +24,23 @@ class LLM_Model:
             ValueError: If reviews list is empty.
             Exception: If API call fails.
         Note:
-            Uses Llama-3.1-70B-Instruct model for analysis.
+            Uses cardiffnlp/twitter-roberta-base-sentiment model for analysis.
         """
         if not reviews:
             raise ValueError("Reviews list cannot be empty")
         reviews_text = "\n----<REVIEW>----\n".join(reviews)
         prompt = f"""
         Summarize the overall sentiment of these game reviews.
-        Each review is separated by the tag <REVIEW>. Give the result
-        without paragraph breaks.
+        Each review is separated by the tag <REVIEW>.
+        Give the result without paragraph breaks.
+        Give the result in 250 words, no more.
+        Include positive and negative aspects if applicable.
+        Reviews:
 
         {reviews_text}
         """
         completion = client.chat.completions.create(
-            model="meta-llama/Llama-3.1-70B-Instruct",
+            model="cardiffnlp/twitter-roberta-base-sentiment",
             messages=[
                 {
                     "role": "user",
