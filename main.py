@@ -1,4 +1,5 @@
 from src.models import SentimentResponse, ErrorResponse
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Query
 from src.db.db_operations import DBOperations
 from src.obtain_reviews import ObtainReviews
@@ -11,6 +12,13 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 obtain_review = ObtainReviews()
