@@ -40,7 +40,7 @@ class LLM_Model:
         {reviews_text}
         """
         completion = client.chat.completions.create(
-            model="cardiffnlp/twitter-roberta-base-sentiment",
+            model="meta-llama/Llama-3.2-3B-Instruct:hyperbolic",
             messages=[
                 {
                     "role": "user",
