@@ -32,9 +32,11 @@ class LLM_Model:
         prompt = f"""
         Summarize the overall sentiment of these game reviews.
         Each review is separated by the tag <REVIEW>.
-        Give the result without paragraph breaks.
-        Give the result in 250 words, no more.
+        Give the result without paragraph breaks, special characters just give
+        text.
+        IMPORTANT: Give the result in 150 characters, no more.
         Include positive and negative aspects if applicable.
+
         Reviews:
 
         {reviews_text}
