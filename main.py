@@ -90,7 +90,7 @@ def analyze_sentiment(
             obtain_review.game_id = game_id
             reviews = obtain_review.fetch_reviews()
             reviews_count = len(reviews)
-            sentiment = llm.generate_sentiment(reviews=reviews)
+            sentiment = llm.generate_general_sentiment(reviews=reviews)
             # Cache the result in Redis
             db.set_sentiment(
                 game_id=game_id,
